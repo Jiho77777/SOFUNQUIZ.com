@@ -50,9 +50,9 @@ input {
 
 <div class="card">
 
-  <div id="question">Loading...</div>
+  <div id="question">Press Start!</div>
 
-  <input id="answer" placeholder="Type answer">
+  <input id="answer" placeholder="Type answer here">
 
   <br>
 
