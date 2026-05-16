@@ -1,47 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>Mini Quiz Game</title>
+<meta charset="UTF-8">
+<title>Mini Quiz Game</title>
 
-  <style>
-    body {
-      font-family: Arial;
-      text-align: center;
-      background: #f4f6ff;
-      padding: 40px;
-    }
+<style>
+body {
+  font-family: Arial;
+  text-align: center;
+  background: #f4f6ff;
+  padding: 40px;
+}
 
-    .card {
-      background: white;
-      padding: 20px;
-      margin: auto;
-      width: 300px;
-      border-radius: 15px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
+.card {
+  background: white;
+  padding: 20px;
+  margin: auto;
+  width: 300px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
 
-    button {
-      padding: 10px 20px;
-      margin-top: 10px;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      background: #4a6cf7;
-      color: white;
-    }
+button {
+  padding: 10px 20px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  background: #4a6cf7;
+  color: white;
+}
 
-    input {
-      padding: 10px;
-      width: 80%;
-      margin-top: 10px;
-    }
+input {
+  padding: 10px;
+  width: 80%;
+  margin-top: 10px;
+}
 
-    .score {
-      font-size: 20px;
-      margin-top: 20px;
-    }
-  </style>
+.score {
+  font-size: 20px;
+  margin-top: 20px;
+}
+</style>
 </head>
 
 <body>
@@ -49,6 +49,7 @@
 <h1>🎮 Mini Gimkit Style Quiz</h1>
 
 <div class="card">
+
   <div id="question">Press Start!</div>
 
   <input id="answer" placeholder="Type answer here">
@@ -59,6 +60,7 @@
   <button onclick="nextQuestion()">Next</button>
 
   <div class="score">Score: <span id="score">0</span></div>
+
 </div>
 
 <script>
