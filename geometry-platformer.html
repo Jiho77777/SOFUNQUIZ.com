@@ -86,7 +86,36 @@ function makeMap(){let difficulty=(world-1)*5+stage,kind=world-1;platforms=[];sp
 function resetStage(){player={x:35,y:420,w:31,h:42,vx:0,vy:0,ground:false};cam=0;dead=false;stageDone=false;quizOpen=false;answered=false;frame=0;makeMap();$('quiz').classList.add('hidden');$('result').classList.add('hidden');updateStatus()}
 function updateStatus(){$('gamestatus').textContent='🔷 '+prisoners.filter(p=>p.saved).length+'/'+prisoners.length+' 구출'}
 function hit(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
-function questionFor(level){let a,b,q,ans,wrong;if(level===1)return {q:'삼각형은 변이 몇 개일까?',ans:3,opts:[3,2,4,5],explain:'삼각형은 변이 3개야!'};if(level<=3){a=level+1;b=level;q=a+' + '+b+' = ?';ans=a+b;wrong=[ans+2,ans-1,ans+3]}else if(level<=6){a=level+3;b=level+2;q=a+' × '+b+' = ?';ans=a*b;wrong=[ans+2,ans-3,ans+5]}else if(level<=10){a=level+4;b=level+2;q='('+a+' × '+b+') − '+b+' = ?';ans=a*b-b;wrong=[ans+b,ans-2,ans+3]}else if(level<=15){a=level+2;b=level+1;q='변의 길이가 '+a+'인 정사각형의 둘레는?';ans=a*4;wrong=[a*2,a*a,ans+4]}else{a=level+3;b=level-2;q='x = '+a+'일 때, 2x + '+b+' = ?';ans=2*a+b;wrong=[ans-2,ans+2,ans+b]}let opts=[ans,...wrong].sort(()=>Math.random()-.5);return {q,ans,opts,explain:'정답은 '+ans+'이야. 계산 과정을 다시 확인해 봐!'}}
+function questionFor(level){
+const bank=[
+{q:'△ 이 도형의 이름은?',ans:'삼각형',opts:['삼각형','사각형','오각형','원'],explain:'삼각형은 변이 3개인 도형이야.'},
+{q:'꼭짓점이 없는 도형은?',ans:'원',opts:['삼각형','사각형','원','오각형'],explain:'원에는 꼭짓점이 없어.'},
+{q:'변이 5개인 도형은?',ans:'오각형',opts:['삼각형','사각형','오각형','육각형'],explain:'오각형은 변이 5개야.'},
+{q:'네 각이 모두 직각인 사각형은?',ans:'직사각형',opts:['삼각형','직사각형','원','오각형'],explain:'직사각형은 네 각이 모두 직각이야.'},
+{q:'변이 6개인 도형은?',ans:'육각형',opts:['오각형','육각형','사각형','삼각형'],explain:'육각형은 변이 6개야.'},
+{q:'정사각형의 대각선은 몇 개일까?',ans:'2개',opts:['1개','2개','3개','4개'],explain:'정사각형에는 대각선이 2개 있어.'},
+{q:'90도보다 작은 각은?',ans:'예각',opts:['예각','직각','둔각','평각'],explain:'예각은 90도보다 작은 각이야.'},
+{q:'90도인 각은?',ans:'직각',opts:['예각','직각','둔각','평각'],explain:'직각은 90도인 각이야.'},
+{q:'90도보다 크고 180도보다 작은 각은?',ans:'둔각',opts:['예각','직각','둔각','평각'],explain:'둔각은 90도보다 크고 180도보다 작아.'},
+{q:'삼각형의 내각의 합은?',ans:'180도',opts:['90도','180도','270도','360도'],explain:'삼각형의 세 내각을 합하면 180도야.'},
+{q:'사각형의 내각의 합은?',ans:'360도',opts:['180도','270도','360도','540도'],explain:'사각형의 네 내각을 합하면 360도야.'},
+{q:'네 변의 길이가 모두 같은 사각형은?',ans:'마름모',opts:['마름모','사다리꼴','삼각형','원'],explain:'마름모는 네 변의 길이가 모두 같아.'},
+{q:'마주 보는 변 두 쌍이 평행한 사각형은?',ans:'평행사변형',opts:['평행사변형','사다리꼴','삼각형','원'],explain:'평행사변형은 마주 보는 변이 서로 평행해.'},
+{q:'중심에서 원의 가장자리까지의 선분은?',ans:'반지름',opts:['반지름','지름','대각선','높이'],explain:'반지름은 원의 중심에서 가장자리까지의 길이야.'},
+{q:'원의 중심을 지나 양쪽 가장자리를 잇는 선분은?',ans:'지름',opts:['반지름','지름','높이','대각선'],explain:'지름은 원의 중심을 지나는 선분이야.'},
+{q:'정육면체의 면은 몇 개일까?',ans:'6개',opts:['4개','6개','8개','12개'],explain:'정육면체에는 면이 6개 있어.'},
+{q:'정육면체의 꼭짓점은 몇 개일까?',ans:'8개',opts:['6개','8개','10개','12개'],explain:'정육면체의 꼭짓점은 8개야.'},
+{q:'세 변의 길이가 모두 같은 삼각형은?',ans:'정삼각형',opts:['정삼각형','직각삼각형','사다리꼴','마름모'],explain:'정삼각형은 세 변의 길이가 모두 같아.'},
+{q:'한 각이 직각인 삼각형은?',ans:'직각삼각형',opts:['정삼각형','직각삼각형','오각형','마름모'],explain:'직각삼각형에는 직각이 하나 있어.'},
+{q:'같은 평면에서 만나지 않는 두 직선은?',ans:'평행선',opts:['평행선','수직선','대각선','곡선'],explain:'평행선은 아무리 길게 늘려도 만나지 않아.'},
+{q:'도형의 바깥 테두리 길이는?',ans:'둘레',opts:['넓이','둘레','각도','반지름'],explain:'둘레는 도형의 바깥 테두리를 따라 잰 길이야.'},
+{q:'모양과 크기가 같은 두 도형은?',ans:'합동',opts:['합동','평행','수직','대칭축'],explain:'모양과 크기가 같으면 합동인 도형이야.'},
+{q:'변이 8개인 도형은?',ans:'팔각형',opts:['육각형','칠각형','팔각형','오각형'],explain:'팔각형은 변이 8개인 도형이야.'},
+{q:'접었을 때 양쪽이 겹치는 기준선은?',ans:'대칭축',opts:['대각선','대칭축','둘레','반지름'],explain:'대칭축을 기준으로 양쪽 모양이 같아.'}
+];
+const item=bank[(Math.max(1,level)-1)%bank.length];
+return {q:item.q,ans:item.ans,opts:[...item.opts].sort(()=>Math.random()-.5),explain:item.explain};
+}
 function openQuiz(i){if(quizOpen||prisoners[i].saved)return;activePrisoner=i;quizOpen=true;answered=false;let q=questionFor((world-1)*5+stage);$('qtitle').textContent='🔐 도형 구출 '+(i+1)+'/'+prisoners.length;$('qtext').textContent=q.q;$('qfeedback').textContent='정답을 맞혀야 이 도형을 구출할 수 있어.';$('continue').classList.add('hidden');let box=$('answers');box.innerHTML='';q.opts.forEach(v=>{let b=document.createElement('button');b.textContent=v;b.onclick=()=>{if(answered)return;if(v===q.ans){answered=true;prisoners[i].saved=true;$('qfeedback').innerHTML='<span class="good">🔓 정답! '+prisoners[i].emoji+' 구출 성공!</span> '+q.explain;updateStatus();[...box.children].forEach(x=>x.disabled=true);$('continue').classList.remove('hidden')}else{$('qfeedback').innerHTML='<span class="bad">아직 잠겨 있어! 다시 계산해 봐.</span>'}};box.appendChild(b)});$('continue').onclick=()=>{quizOpen=false;$('quiz').classList.add('hidden');player.x=prisoners[i].x+45};$('quiz').classList.remove('hidden')}
 function keydown(e){let k=e.key.toLowerCase();keys[k]=true;if([' ','arrowup','arrowleft','arrowright','arrowdown'].includes(k))e.preventDefault();if(k==='r'&&!$('gameview').classList.contains('hidden'))resetStage()}function keyup(e){keys[e.key.toLowerCase()]=false}window.addEventListener('keydown',keydown);window.addEventListener('keyup',keyup);function bind(id,k){let b=$(id);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[k]=true});['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false))}bind('left','arrowleft');bind('right','arrowright');bind('jump',' ');
 function update(){if($('gameview').classList.contains('hidden')||quizOpen||stageDone||dead||tutorialPaused)return;frame++;let kind=world-1,diff=(world-1)*5+stage;let l=keys.a||keys.arrowleft,r=keys.d||keys.arrowright,j=keys.w||keys.arrowup||keys[' '];let targetVx=l?-4.2*(1+(upgrades.speed||0)*.15):r?4.2*(1+(upgrades.speed||0)*.15):0;if(kind===1&&player.ground)targetVx*=1.15;player.vx+=(targetVx-player.vx)*(targetVx===0?.24:.22);if(Math.abs(player.vx)<.06)player.vx=0;if(j&&player.ground){player.vy=(kind===3?-15:-12.4)*(1+(upgrades.jump||0)*.12);player.ground=false;player.jumpPulse=1}player.vy=Math.min(player.vy+(kind===3?.32:.58),13);let oldY=player.y;player.x+=player.vx;player.y+=player.vy;player.ground=false;for(let p of platforms){if(p.move){p.x=p.baseX+Math.sin(frame/45+p.phase)*45;p.y=p.baseY+Math.cos(frame/55+p.phase)*13}if(player.vy>=0&&oldY+player.h<=p.y+6&&player.y+player.h>=p.y&&player.x+player.w>p.x&&player.x<p.x+p.w){player.y=p.y-player.h;player.vy=0;player.ground=true}}for(let s of spikes)if(hit(player,{x:s.x+3,y:s.y-10,w:s.w-5,h:25})){dead=true}for(let l of lava)if(hit(player,{x:l.x,y:l.y+6,w:l.w,h:60})){dead=true}if(kind===4&&portals.length>=2&&hit(player,{x:portals[0].x-12,y:portals[0].y-15,w:30,h:45})){player.x=portals[1].x+35;player.y=portals[1].y-40;portals=[]}if(player.y>610)dead=true;for(let i=0;i<prisoners.length;i++)if(!prisoners[i].saved&&hit(player,{x:prisoners[i].x-20,y:prisoners[i].y-15,w:65,h:65})){openQuiz(i);break}if(player.x>exitX-10){if(prisoners.every(p=>p.saved)){stageDone=true;let id=(world-1)*5+stage;cleared.add(id);let reward=Math.round((25+5*prisoners.length)*(1+(upgrades.coins||0)*.25));coins+=reward;unlocked=Math.max(unlocked,Math.min(36,id+1));save();renderLobby();$('resulttitle').textContent='🎉 '+worldsData[world-1].name+' 클리어!';$('resulttext').textContent='도형 '+prisoners.length+'개 전원 구출! 코인 +'+(25+5*prisoners.length)+'개. 다음 스테이지가 열렸어!';$('next').classList.toggle('hidden',id>=35);$('result').classList.remove('hidden')}else{player.x=exitX-20;$('gamestatus').textContent='출구 잠김! 도형을 모두 구출해!'}}cam=Math.max(0,Math.min(player.x-250,exitX-700))}
