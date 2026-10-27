@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Geometry Blast | 도형 왕국</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:18px;font-family:system-ui,sans-serif;color:#fff;background:radial-gradient(circle at top,#343b83,#10152f 65%);min-height:100vh}.wrap{max-width:760px;margin:auto}.top,.stats,.actions{display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap}.logo{font-size:clamp(24px,5vw,36px);font-weight:1000}.logo span{color:#61e7f7}.pill{padding:8px 12px;border-radius:20px;background:#252e60;border:1px solid #46518b}.panel{margin-top:18px;padding:clamp(18px,4vw,30px);border-radius:24px;background:linear-gradient(145deg,#252d60,#1a2046);border:1px solid #46518b;box-shadow:0 15px 45px #0004}.center{text-align:center}.hero{font-size:70px}h1{font-size:clamp(28px,5vw,42px);margin:8px 0}.muted{color:#b8c2f5}button{font:inherit;font-weight:800;border:0;border-radius:13px;padding:12px 17px;cursor:pointer;margin:4px}.primary{color:#111632;background:linear-gradient(100deg,#66e8f6,#9aa7ff)}.secondary{color:white;background:#343d75;border:1px solid #6571b3}.gold{background:#ffd65a;color:#33200a}.arena{display:grid;place-items:center;min-height:150px;background:#111837;border-radius:18px;margin:18px 0}.shape{font-size:90px}.question{font-size:clamp(19px,4vw,25px);font-weight:900;text-align:center}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:16px}.answer{background:#303a72;color:#fff;border:2px solid #4b5797;min-height:58px}.answer.correct{background:#1d805d;border-color:#7cf2a5}.answer.wrong{background:#8c315f;border-color:#ff76bd}.answer:disabled{cursor:default}.bar{height:10px;background:#0e1330;border-radius:20px;overflow:hidden;margin:12px 0}.bar div{height:100%;width:0;background:linear-gradient(90deg,#61e7f7,#a4ffca)}.feedback{text-align:center;min-height:28px;font-weight:900;margin-top:12px}.hidden{display:none!important}.store{background:#111837;border-radius:14px;padding:12px;margin:9px 0;display:flex;justify-content:space-between;align-items:center;gap:8px}@media(max-width:440px){body{padding:10px}.grid{gap:7px}.answer{padding:10px;font-size:15px}}
+</style></head><body><main class="wrap">
+<header class="top"><div class="logo">🔷 GEOMETRY <span>BLAST</span></div><div class="stats"><div class="pill">🪙 <b id="coins">0</b></div><div class="pill">⭐ LV <b id="level">1</b></div><div class="pill">🔥 <b id="streak">0</b></div></div></header>
+<section id="home" class="panel center"><div class="hero">🏰🔺🟣</div><h1>도형 왕국을 구하라!</h1><p class="muted">4학년 수학 퀴즈 · 콤보 · 보스전 · 코인 상점</p><p>정답을 맞혀 몬스터를 물리치고 도형 마스터가 되자!</p><div class="actions" style="justify-content:center"><button class="primary" onclick="start()">⚔️ 모험 시작</button><button class="secondary" onclick="shop('home')">🛍️ 코인 상점</button></div></section>
+<section id="game" class="panel hidden"><div class="top"><b id="stage">STAGE 1</b><span id="qnum">1 / 10</span></div><div class="bar"><div id="progress"></div></div><div class="arena"><div id="art" class="shape">🔺</div></div><div id="question" class="question"></div><div id="answers" class="grid"></div><div id="feedback" class="feedback"></div><div class="actions"><button id="next" class="primary hidden" onclick="next()">다음 문제 ➜</button><button class="secondary" onclick="shop('game')">🛍️ 상점</button></div></section>
+<section id="result" class="panel center hidden"><div class="hero">🏆</div><h1>스테이지 클리어!</h1><p id="resultText"></p><button class="primary" onclick="start()">🔁 다음 스테이지</button><button class="secondary" onclick="home()">🏠 홈</button><button class="gold" onclick="shop('result')">🛍️ 상점</button></section>
+<section id="store" class="panel hidden"><h2>🛍️ 코인 상점</h2><p>보상 코인으로 아이템을 모아 봐!</p><div id="shopCoins" class="pill">🪙 0</div><div class="store"><span>⚡ 콤보 부스터 <small>다음 정답 보상 2배</small></span><button class="gold" onclick="buy()">20 🪙</button></div><div class="store"><span>👑 도형 왕관 <small>마스터 칭호</small></span><button class="gold" onclick="crown()">35 🪙</button></div><p id="shopMsg" class="feedback"></p><button class="primary" onclick="back()">돌아가기</button></section>
+</main><script>
+const $=x=>document.getElementById(x);let coins=0,level=1,streak=0,qi=0,score=0,earned=0,cur,locked=false,prev='home',booster=false,hasCrown=false;
+const bank=[
+['세 변의 길이가 모두 같은 삼각형은?',['정삼각형','직각삼각형','사다리꼴','오각형'],0,'🔺','정삼각형은 세 변의 길이가 모두 같아!'],
+['직각은 몇 도일까?',['45°','90°','120°','180°'],1,'📐','직각은 정확히 90°야.'],
+['마주 보는 두 쌍의 변이 평행한 사각형은?',['삼각형','원','평행사변형','오각형'],2,'▱','평행사변형은 마주 보는 변이 평행해.'],
+['한 변이 5cm인 정사각형의 둘레는?',['10cm','15cm','20cm','25cm'],2,'🟦','5 × 4 = 20cm!'],
+['가로 6cm, 세로 3cm인 직사각형의 넓이는?',['9㎠','18㎠','12㎠','24㎠'],1,'🟪','6 × 3 = 18㎠.'],
+['대칭축이 4개인 도형은?',['일반 삼각형','정사각형','평행사변형','직각삼각형'],1,'🟨','정사각형에는 대칭축이 4개 있어.'],
+['변이 5개인 다각형은?',['육각형','사각형','오각형','팔각형'],2,'⬟','오각형은 변이 5개야.'],
+['둔각은 어떤 각일까?',['90°보다 작은 각','정확히 90°','90°보다 크고 180°보다 작은 각','정확히 180°'],2,'📐','둔각은 직각보다 크고 평각보다 작아.'],
+['삼각형의 세 각을 더하면?',['90°','180°','270°','360°'],1,'🔺','삼각형의 내각의 합은 180°야.'],
+['원의 특징으로 맞는 것은?',['꼭짓점이 4개다','변이 3개다','둘레의 모든 점이 중심에서 같은 거리에 있다','직각이 2개다'],2,'🟣','원의 둘레 위 모든 점은 중심에서 같은 거리에 있어.'],
+['한 변이 7cm인 정사각형의 둘레는?',['14cm','21cm','28cm','49cm'],2,'🟩','7 × 4 = 28cm!'],
+['직사각형의 특징은?',['네 변이 항상 같다','네 각이 모두 직각이다','꼭짓점이 3개다','곡선으로만 이루어졌다'],1,'🟦','직사각형은 네 각이 모두 직각이야.'],
+['정육면체의 면은 몇 개?',['4개','6개','8개','12개'],1,'🎲','정육면체는 면이 6개야.'],
+['35°인 각은?',['직각','둔각','예각','평각'],2,'📐','예각은 90°보다 작은 각이야.'],
+['가로 8cm, 세로 4cm인 직사각형의 둘레는?',['12cm','24cm','32cm','16cm'],1,'🟪','(8 + 4) × 2 = 24cm!'],
+['사각형의 네 각을 더하면?',['180°','270°','360°','90°'],2,'🔶','사각형의 내각의 합은 360°야.']
+];
+function stats(){$('coins').textContent=coins;$('level').textContent=level;$('streak').textContent=streak}
+function show(id){['home','game','result','store'].forEach(k=>$(k).classList.toggle('hidden',k!==id))}
+function home(){show('home')}function start(){qi=0;score=0;earned=0;streak=0;locked=false;show('game');load()}
+function load(){locked=false;$('next').classList.add('hidden');$('feedback').textContent='';let item=bank[Math.floor(Math.random()*bank.length)];cur=item;$('stage').textContent=qi===9?'👑 BOSS ROUND':'⚔️ STAGE '+level;$('qnum').textContent='문제 '+(qi+1)+' / 10';$('progress').style.width=(qi*10)+'%';$('art').textContent=qi===9?'👾':item[3];$('question').textContent=(qi===9?'보스의 수수께끼! ':'')+item[0];let arr=item[1].map((v,i)=>({v,ok:i===item[2]})).sort(()=>Math.random()-.5);$('answers').innerHTML='';arr.forEach(o=>{let b=document.createElement('button');b.className='answer';b.textContent=o.v;b.onclick=()=>answer(b,o.ok);$('answers').appendChild(b)})}
+function answer(btn,ok){if(locked)return;locked=true;[...$('answers').children].forEach(b=>b.disabled=true);if(ok){streak++;score+=100+Math.min(streak,5)*20;let gain=(5+Math.min(streak,5))*(booster?2:1);booster=false;coins+=gain;earned+=gain;btn.classList.add('correct');$('feedback').style.color='#7cf2a5';$('feedback').textContent='✨ 정답! +'+gain+' 코인'+(streak>=3?' · 🔥 '+streak+' 콤보!':'')}else{streak=0;btn.classList.add('wrong');[...$('answers').children].forEach(b=>{if(b.textContent===cur[1][cur[2]])b.classList.add('correct')});$('feedback').style.color='#ffd65a';$('feedback').textContent='💡 '+cur[4]}stats();$('next').classList.remove('hidden');$('progress').style.width=((qi+1)*10)+'%'}
+function next(){qi++;if(qi>=10){level++;stats();$('resultText').textContent='점수 '+score+'점 · 코인 '+earned+'개 획득! '+(score>=1300?'완벽해! 도형 마스터 실력!':'다음 스테이지에서 더 높은 점수에 도전해 봐!');show('result')}else load()}
+function shop(where){prev=where;$('shopCoins').textContent='🪙 '+coins+' 코인';$('shopMsg').textContent='';show('store')}function back(){show(prev)}
+function buy(){if(coins<20){$('shopMsg').textContent='코인이 부족해! 문제를 더 풀어 보자.';return}coins-=20;booster=true;$('shopMsg').textContent='⚡ 구매 완료! 다음 정답 보상이 2배야.';$('shopCoins').textContent='🪙 '+coins+' 코인';stats()}
+function crown(){if(coins<35){$('shopMsg').textContent='코인이 부족해! 문제를 더 풀어 보자.';return}if(hasCrown){$('shopMsg').textContent='왕관은 이미 가지고 있어!';return}coins-=35;hasCrown=true;$('shopMsg').textContent='👑 도형 왕관 획득!';$('shopCoins').textContent='🪙 '+coins+' 코인';stats()}
+stats();
+</script></body></html>
