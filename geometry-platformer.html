@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Geometry Blast Platformer</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#10172e;color:white;font-family:system-ui,sans-serif;text-align:center;padding:14px}h1{margin:8px}p{color:#cbd8ff}#game{display:block;width:min(960px,100%);height:auto;margin:12px auto;border:3px solid #80eaff;border-radius:14px;background:#87d7ff;touch-action:none}.help{max-width:960px;margin:auto;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.key{background:#25365f;border:1px solid #718bc8;border-radius:10px;padding:8px 12px}button{font-size:20px;padding:12px 20px;border:0;border-radius:12px;background:#ffe16b;font-weight:900;margin:4px;touch-action:none}.mobile{display:none}@media(max-width:650px){.mobile{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}.mobile button{min-width:68px}body{padding:6px}}
+</style></head><body><h1>🔷 Geometry Blast: Platformer</h1><p>도형을 모으고 가시를 피해 출구까지 도착해!</p><div class="help"><span class="key">이동: A / D 또는 ← / →</span><span class="key">점프: Space / W / ↑</span><span class="key">재시작: R</span></div><canvas id="game" width="960" height="540" aria-label="2D 플랫포머 게임"></canvas><div class="mobile"><button id="left">⬅️</button><button id="jump">⬆️ 점프</button><button id="right">➡️</button></div><p id="status">도형 0 / 5</p><button onclick="reset()">다시 시작 ↻</button>
+<script>
+const c=document.getElementById('game'),ctx=c.getContext('2d'),status=document.getElementById('status');
+const keys={};let player,cam,items,won,dead,frame;
+const platforms=[{x:0,y:470,w:270,h:70},{x:330,y:420,w:150,h:25},{x:530,y:360,w:150,h:25},{x:720,y:300,w:130,h:25},{x:890,y:390,w:250,h:150},{x:1180,y:330,w:150,h:25},{x:1390,y:400,w:180,h:25},{x:1620,y:340,w:200,h:200}];
+const spikes=[{x:275,y:470,w:50},{x:480,y:420,w:50},{x:680,y:360,w:45},{x:850,y:470,w:40},{x:1330,y:470,w:55},{x:1570,y:400,w:45}];
+function reset(){player={x:45,y:410,w:32,h:42,vx:0,vy:0,ground:false};cam=0;items=[{x:380,y:380,t:'🔺',got:false},{x:580,y:320,t:'🟣',got:false},{x:765,y:260,t:'⭐',got:false},{x:1000,y:350,t:'🟦',got:false},{x:1460,y:360,t:'💎',got:false}];won=false;dead=false;frame=0;status.textContent='도형 0 / 5';}
+function down(e){keys[e.key.toLowerCase()]=true;if([' ','arrowup','arrowleft','arrowright'].includes(e.key.toLowerCase()))e.preventDefault()}
+function up(e){keys[e.key.toLowerCase()]=false}
+window.addEventListener('keydown',down);window.addEventListener('keyup',up);
+function bind(id,key){const b=document.getElementById(id);b.addEventListener('pointerdown',e=>{e.preventDefault();keys[key]=true});['pointerup','pointercancel','pointerleave'].forEach(ev=>b.addEventListener(ev,()=>keys[key]=false))}
+bind('left','arrowleft');bind('right','arrowright');bind('jump',' ');
+function overlap(a,b){return a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y}
+function update(){if(won||dead)return;frame++;let left=keys.a||keys.arrowleft,right=keys.d||keys.arrowright,jump=keys.w||keys.arrowup||keys[' '];player.vx=left?-4.4:right?4.4:0;if(jump&&player.ground){player.vy=-12.8;player.ground=false}player.vy=Math.min(player.vy+.58,14);player.x+=player.vx;player.y+=player.vy;player.ground=false;
+for(const p of platforms){if(overlap(player,p)&&player.vy>=0&&player.y+player.h-player.vy<=p.y+5){player.y=p.y-player.h;player.vy=0;player.ground=true}}
+for(const s of spikes){let box={x:s.x+5,y:s.y+8,w:s.w-10,h:35};if(overlap(player,box)){dead=true;status.textContent='앗! 가시에 닿았어. 다시 시작을 눌러 봐.'}}
+for(const it of items){if(!it.got&&overlap(player,{x:it.x,y:it.y,w:28,h:28})){it.got=true;status.textContent='도형 '+items.filter(a=>a.got).length+' / '+items.length}}
+if(player.y>650||player.x<0){dead=true;status.textContent='떨어졌어! 다시 시작을 눌러 봐.'}
+if(player.x>1780&&items.every(i=>i.got)){won=true;status.textContent='🎉 클리어! 도형을 모두 모으고 출구에 도착했어!'}else if(player.x>1780){player.x=1780;status.textContent='출구가 잠겼어! 도형을 전부 모아야 해.'}
+cam=Math.max(0,Math.min( player.x-250, 1820-c.width));}
+function draw(){ctx.clearRect(0,0,c.width,c.height);let g=ctx.createLinearGradient(0,0,0,540);g.addColorStop(0,'#78d8ff');g.addColorStop(1,'#e5faff');ctx.fillStyle=g;ctx.fillRect(0,0,960,540);
+ctx.fillStyle='#fff8';for(let i=0;i<7;i++){let x=((i*190-cam*.25)%1100+1100)%1100;ctx.beginPath();ctx.arc(x,75+(i%3)*35,22,0,Math.PI*2);ctx.arc(x+25,72+(i%3)*35,30,0,Math.PI*2);ctx.arc(x+50,82+(i%3)*35,20,0,Math.PI*2);ctx.fill()}
+ctx.save();ctx.translate(-cam,0);
+for(const p of platforms){ctx.fillStyle='#8a552f';ctx.fillRect(p.x,p.y,p.w,p.h);ctx.fillStyle='#44c75d';ctx.fillRect(p.x,p.y,p.w,12);ctx.fillStyle='#9aff79';for(let x=p.x;x<p.x+p.w;x+=22)ctx.fillRect(x,p.y,13,5)}
+for(const s of spikes){ctx.fillStyle='#f3f5ff';ctx.strokeStyle='#65739b';ctx.lineWidth=2;for(let x=s.x;x<s.x+s.w;x+=18){ctx.beginPath();ctx.moveTo(x,s.y+18);ctx.lineTo(x+9,s.y-2);ctx.lineTo(x+18,s.y+18);ctx.closePath();ctx.fill();ctx.stroke()}}
+for(const it of items)if(!it.got){ctx.font='28px system-ui';ctx.fillText(it.t,it.x,it.y+25)}
+ctx.fillStyle='#ff5e72';ctx.fillRect(1780,300,10,90);ctx.fillStyle=items.every(i=>i.got)?'#39d98a':'#ffb84d';ctx.fillRect(1790,300,45,28);ctx.fillStyle='#1e3761';ctx.font='bold 15px system-ui';ctx.fillText('EXIT',1793,319);
+ctx.fillStyle='#397cff';ctx.fillRect(player.x,player.y,player.w,player.h);ctx.fillStyle='#fff';ctx.fillRect(player.x+6,player.y+9,7,8);ctx.fillRect(player.x+20,player.y+9,7,8);ctx.fillStyle='#17254c';ctx.fillRect(player.x+9,player.y+12,3,4);ctx.fillRect(player.x+23,player.y+12,3,4);ctx.restore();
+if(won||dead){ctx.fillStyle='#10172ecc';ctx.fillRect(0,0,960,540);ctx.fillStyle='white';ctx.textAlign='center';ctx.font='bold 44px system-ui';ctx.fillText(won?'LEVEL CLEAR!':'TRY AGAIN',480,250);ctx.font='22px system-ui';ctx.fillText(won?'도형 왕국을 구했어!':'R 키 또는 다시 시작 버튼',480,295);ctx.textAlign='left'}}
+function loop(){update();draw();requestAnimationFrame(loop)}window.reset=reset;reset();loop();
+</script></body></html>
